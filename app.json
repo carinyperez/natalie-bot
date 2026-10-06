@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "natalie-bo",
-    "slug": "natalie-bo",
+    "name": "natalie-bot",
+    "slug": "natalie-bot",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
