@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
+import { Platform } from 'react-native';
 
 /** Longest video v1 accepts, per the product brief. */
 export const MAX_VIDEO_SECONDS = 90;
@@ -37,8 +38,9 @@ export function usePickVideo() {
       if (result.canceled) return;
 
       const asset = result.assets[0];
-      // The picker reports duration in milliseconds.
-      const durationSeconds = asset.duration != null ? asset.duration / 1000 : null;
+      // Native pickers report duration in milliseconds; the web picker reports seconds.
+      const durationSeconds =
+        asset.duration != null ? (Platform.OS === 'web' ? asset.duration : asset.duration / 1000) : null;
 
       if (durationSeconds != null && durationSeconds > MAX_VIDEO_SECONDS) {
         setError(

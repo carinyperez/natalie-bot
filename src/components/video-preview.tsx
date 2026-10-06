@@ -31,8 +31,8 @@ export function VideoPreview({ uri }: VideoPreviewProps) {
 const styles = StyleSheet.create({
   video: {
     width: '100%',
+    maxWidth: 270,
     aspectRatio: 9 / 16,
-    maxHeight: 480,
     borderRadius: Spacing.four,
     overflow: 'hidden',
     backgroundColor: '#000000',

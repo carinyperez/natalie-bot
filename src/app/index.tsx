@@ -57,6 +57,8 @@ export default function HomeScreen() {
             onPress={pickVideo}
             disabled={isPicking}
             accessibilityRole="button"
+            accessibilityLabel={isPicking ? 'Opening your photos' : undefined}
+            accessibilityState={{ disabled: isPicking, busy: isPicking }}
             style={({ pressed }) => [
               styles.button,
               { backgroundColor: theme.text, opacity: pressed || isPicking ? 0.7 : 1 },

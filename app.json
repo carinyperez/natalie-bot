@@ -36,9 +36,12 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Natalie Bot needs access to your photos so you can pick a video to turn into a reel."
+          "photosPermission": "Natalie Bot needs access to your photos so you can pick a video to turn into a reel.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
