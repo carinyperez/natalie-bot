@@ -2,6 +2,10 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Docs
+
+- [Architecture (v1)](docs/architecture.md): how a video goes from the phone to a finished reel
+
 ## Get started
 
 1. Install dependencies
