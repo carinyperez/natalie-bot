@@ -2,6 +2,11 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Docs
+
+- [Architecture (v1)](docs/architecture.md): how a video goes from the phone to a finished reel
+- [About me](docs/about-me.md): who is building Natalie Bot and why
+
 ## Get started
 
 1. Install dependencies
