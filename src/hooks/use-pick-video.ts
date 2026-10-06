@@ -14,7 +14,7 @@ export type PickedVideo = {
 
 /**
  * Lets the user choose one video from their photo library.
- * Handles the permission prompt and rejects videos longer than MAX_VIDEO_SECONDS.
+ * Rejects videos longer than MAX_VIDEO_SECONDS.
  */
 export function usePickVideo() {
   const [video, setVideo] = useState<PickedVideo | null>(null);
@@ -25,12 +25,7 @@ export function usePickVideo() {
     setError(null);
     setIsPicking(true);
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setError('Natalie Bot needs access to your photos to pick a video. You can allow it in Settings.');
-        return;
-      }
-
+      // The system picker doesn't need media library permission, so open it directly.
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['videos'],
         allowsMultipleSelection: false,
