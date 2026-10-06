@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # expo-env.d.ts is gitignored; Expo normally generates it on `expo start`.
+      # It pulls in Expo's types, including declarations for CSS imports.
+      - name: Generate Expo type declarations
+        run: echo '/// <reference types="expo/types" />' > expo-env.d.ts
+
+      - name: Typecheck
+        run: npm run typecheck
