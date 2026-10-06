@@ -44,7 +44,7 @@ export function usePickVideo() {
 
       if (durationSeconds != null && durationSeconds > MAX_VIDEO_SECONDS) {
         setError(
-          `That video is ${Math.round(durationSeconds)} seconds. Pick one that's ${MAX_VIDEO_SECONDS} seconds or shorter.`,
+          `That video is ${Math.ceil(durationSeconds)} seconds. Pick one that's ${MAX_VIDEO_SECONDS} seconds or shorter.`,
         );
         return;
       }
