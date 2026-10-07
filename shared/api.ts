@@ -1,5 +1,5 @@
 /**
- * Contract between the app and the backend API. Types and constants only, so both sides can import it.
+ * Contract between the app and the backend API. No runtime dependencies, so both sides can import it.
  *
  * Every endpoint needs `Authorization: Bearer <Cognito token>`. Another user's job returns 404.
  */
@@ -82,3 +82,32 @@ export type CreateJobResponse = { job: Job; upload: UploadTarget };
 
 /** GET /v1/jobs/{jobId} */
 export type GetJobResponse = { job: Job };
+
+/** Everything the app needs from the backend. */
+export interface ApiClient {
+  /** GET /v1/tracks */
+  listTracks(): Promise<ListTracksResponse>;
+  /** POST /v1/jobs */
+  createJob(req: CreateJobRequest): Promise<CreateJobResponse>;
+  /** GET /v1/jobs/{jobId} */
+  getJob(jobId: string): Promise<GetJobResponse>;
+  /** Sends the file straight to S3 with the presigned POST from createJob. Not a backend endpoint. */
+  uploadFile(upload: UploadTarget, fileUri: string, contentType: CreateJobRequest['contentType']): Promise<void>;
+}
+
+/** Thrown by an ApiClient for any non-2xx response, so screens can switch on `code`. */
+export class ApiRequestError extends Error {
+  readonly status: number;
+  readonly body: ApiError;
+
+  constructor(status: number, body: ApiError) {
+    super(body.error.message);
+    this.name = 'ApiRequestError';
+    this.status = status;
+    this.body = body;
+  }
+
+  get code(): ApiErrorCode {
+    return this.body.error.code;
+  }
+}
