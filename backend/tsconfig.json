@@ -1,0 +1,24 @@
+{
+  // Typecheck only: esbuild (via serverless-esbuild) bundles the handlers, and ts-jest runs the tests.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": "..",
+    "strict": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node", "jest"],
+    // Same alias the app uses. esbuild reads it from this file; jest.config.js mirrors it.
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  // ../shared holds the API contract the app also imports. Its tests run under the root Jest.
+  "include": ["src/**/*.ts", "../shared/**/*.ts"],
+  "exclude": ["../shared/**/*.test.ts"]
+}
