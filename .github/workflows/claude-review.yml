@@ -28,5 +28,8 @@ jobs:
             Review this pull request for bugs, security problems, and
             React Native / Expo issues. Use inline comments for specific
             problems. Skip style nitpicks.
+
+            If you find no problems, post one short PR comment saying so
+            with `gh pr comment`, so a clean review is visible.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
