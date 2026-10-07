@@ -142,6 +142,16 @@ describe('ChooseTrackScreen', () => {
     expect(latestPlayer().pause).toHaveBeenCalledTimes(1);
   });
 
+  it('closes without changing the music when the user taps Cancel', async () => {
+    await openPicker();
+    await userEvent.press(row('City Lights'));
+    await userEvent.press(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(app.getPathname()).toBe('/');
+    expect(screen.getByRole('button', { name: 'Choose music' })).toBeOnTheScreen();
+    expect(screen.queryByText('City Lights · Helix Two')).not.toBeOnTheScreen();
+  });
+
   it('returns the chosen track to home with "Use this track", and preselects it when changing', async () => {
     await openPicker();
     await userEvent.press(row('City Lights'));

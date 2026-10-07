@@ -32,7 +32,16 @@ export default function ChooseTrackScreen() {
     <ThemedView className="flex-1 flex-row justify-center">
       <SafeAreaView style={{ flex: 1, maxWidth: MaxContentWidth }}>
         <ThemedView className="gap-2 px-6 pb-4 pt-8">
-          <ThemedText type="subtitle">Choose music</ThemedText>
+          <ThemedView className="flex-row items-center justify-between gap-4">
+            <ThemedText type="subtitle">Choose music</ThemedText>
+            {/* A visible way out: swiping the modal down isn't discoverable, and screen readers can't do it. */}
+            <Pressable
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              className="min-h-[44px] justify-center px-2 active:opacity-70">
+              <ThemedText>Cancel</ThemedText>
+            </Pressable>
+          </ThemedView>
           <ThemedText themeColor="textSecondary">Tap a track to pick it. Play to hear a preview.</ThemedText>
         </ThemedView>
 
