@@ -5,8 +5,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VideoPreview } from '@/components/video-preview';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { MAX_VIDEO_SECONDS, usePickVideo } from '@/hooks/use-pick-video';
+import { usePickVideo } from '@/hooks/use-pick-video';
 import { useTheme } from '@/hooks/use-theme';
+import { MAX_VIDEO_SECONDS } from '@shared/api';
 
 function formatDuration(seconds: number) {
   const total = Math.round(seconds);
