@@ -60,10 +60,12 @@
     },
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "<rootDir>/.claude/"
+      "<rootDir>/.claude/",
+      "<rootDir>/backend/"
     ],
     "modulePathIgnorePatterns": [
-      "<rootDir>/.claude/"
+      "<rootDir>/.claude/",
+      "<rootDir>/backend/"
     ]
   }
 }

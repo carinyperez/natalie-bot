@@ -9,6 +9,11 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Backend build output (node_modules/ above covers backend/node_modules)
+backend/.serverless/
+backend/.esbuild/
+backend/.build/
+
 # Native
 .kotlin/
 *.orig.*
