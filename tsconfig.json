@@ -21,5 +21,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-  ]
+  ],
+  // backend/ has its own tsconfig (Node, not React Native). Setting "exclude" replaces the default, so node_modules is listed too.
+  "exclude": ["node_modules", "backend"]
 }

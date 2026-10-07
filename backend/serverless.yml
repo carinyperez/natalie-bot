@@ -1,0 +1,54 @@
+# Natalie Bot API: API Gateway HTTP API + Lambda.
+# Built and deployed with osls (the open-source Serverless Framework fork, no account or license key).
+# Kept compatible with Serverless Framework v4 syntax (params, httpApi, plugins).
+service: natalie-bot-api
+
+frameworkVersion: '4'
+
+plugins:
+  - serverless-esbuild
+
+# One block per stage. There is no `default`, so an unknown stage fails on ${param:...} instead of deploying.
+params:
+  dev:
+    logRetentionInDays: 14
+  prod:
+    logRetentionInDays: 90
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  architecture: arm64
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 256
+  timeout: 10
+  logRetentionInDays: ${param:logRetentionInDays}
+  environment:
+    NODE_OPTIONS: --enable-source-maps
+  httpApi:
+    # Only the native app calls this API, so no CORS.
+    cors: false
+    # The Cognito JWT authorizer goes here (httpApi.authorizers) in the "Auth with Cognito and Sign in with Apple" task.
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node24
+    platform: node
+    format: cjs
+    # AWS SDK v3 ships with the Node.js 24 Lambda runtime.
+    exclude:
+      - '@aws-sdk/*'
+    # Gives esbuild the "@shared/*" path alias, which points at ../shared outside this directory.
+    tsconfig: tsconfig.json
+
+functions:
+  listTracks:
+    handler: src/handlers/list-tracks.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /v1/tracks
