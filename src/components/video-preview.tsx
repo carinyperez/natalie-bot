@@ -1,7 +1,5 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { StyleSheet } from 'react-native';
-
-import { Spacing } from '@/constants/theme';
+import { StyleSheet, View } from 'react-native';
 
 type VideoPreviewProps = {
   uri: string;
@@ -18,23 +16,15 @@ export function VideoPreview({ uri }: VideoPreviewProps) {
   });
 
   return (
-    <VideoView
-      player={player}
-      style={styles.video}
-      nativeControls
-      contentFit="contain"
-      fullscreenOptions={{ enable: true }}
-    />
+    // VideoView is a third-party component, so the frame classes go on a wrapping View.
+    <View className="aspect-[9/16] w-full max-w-[270px] overflow-hidden rounded-3xl bg-black">
+      <VideoView
+        player={player}
+        style={StyleSheet.absoluteFill}
+        nativeControls
+        contentFit="contain"
+        fullscreenOptions={{ enable: true }}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  video: {
-    width: '100%',
-    maxWidth: 270,
-    aspectRatio: 9 / 16,
-    borderRadius: Spacing.four,
-    overflow: 'hidden',
-    backgroundColor: '#000000',
-  },
-});

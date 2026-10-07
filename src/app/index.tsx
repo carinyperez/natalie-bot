@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -20,10 +20,12 @@ export default function HomeScreen() {
   const { video, error, isPicking, pickVideo, clearVideo } = usePickVideo();
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <ThemedView style={styles.header}>
+    <ThemedView className="flex-1 flex-row justify-center">
+      <SafeAreaView style={{ flex: 1, maxWidth: MaxContentWidth }}>
+        <ScrollView
+          contentContainerClassName="grow gap-6 px-6 pt-8"
+          contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four }}>
+          <ThemedView className="gap-2">
             <ThemedText type="subtitle">Natalie Bot</ThemedText>
             <ThemedText themeColor="textSecondary">
               Pick a video and we&apos;ll turn it into a reel with music.
@@ -31,7 +33,7 @@ export default function HomeScreen() {
           </ThemedView>
 
           {video ? (
-            <ThemedView style={styles.previewSection}>
+            <ThemedView className="items-center gap-2">
               <VideoPreview key={video.uri} uri={video.uri} />
               <ThemedText type="small" themeColor="textSecondary">
                 {video.fileName ?? 'Selected video'}
@@ -39,7 +41,9 @@ export default function HomeScreen() {
               </ThemedText>
             </ThemedView>
           ) : (
-            <ThemedView type="backgroundElement" style={styles.emptyState}>
+            <ThemedView
+              type="backgroundElement"
+              className="items-center justify-center gap-1 rounded-3xl py-16">
               <ThemedText>No video selected yet</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 Up to {MAX_VIDEO_SECONDS} seconds
@@ -48,7 +52,7 @@ export default function HomeScreen() {
           )}
 
           {error && (
-            <ThemedText type="small" style={styles.error} accessibilityRole="alert">
+            <ThemedText type="small" themeColor="error" accessibilityRole="alert">
               {error}
             </ThemedText>
           )}
@@ -59,10 +63,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel={isPicking ? 'Opening your photos' : undefined}
             accessibilityState={{ disabled: isPicking, busy: isPicking }}
-            style={({ pressed }) => [
-              styles.button,
-              { backgroundColor: theme.text, opacity: pressed || isPicking ? 0.7 : 1 },
-            ]}>
+            className={`min-h-[52px] items-center justify-center rounded-full px-6 active:opacity-70 ${isPicking ? 'opacity-70' : ''}`}
+            style={{ backgroundColor: theme.text }}>
             {isPicking ? (
               <ActivityIndicator color={theme.background} />
             ) : (
@@ -73,7 +75,7 @@ export default function HomeScreen() {
           </Pressable>
 
           {video && (
-            <Pressable onPress={clearVideo} accessibilityRole="button" style={styles.secondaryButton}>
+            <Pressable onPress={clearVideo} accessibilityRole="button" className="self-center p-2">
               <ThemedText type="small" themeColor="textSecondary">
                 Clear
               </ThemedText>
@@ -84,50 +86,3 @@ export default function HomeScreen() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  safeArea: {
-    flex: 1,
-    maxWidth: MaxContentWidth,
-  },
-  content: {
-    flexGrow: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.five,
-    paddingBottom: BottomTabInset + Spacing.four,
-    gap: Spacing.four,
-  },
-  header: {
-    gap: Spacing.two,
-  },
-  previewSection: {
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.one,
-    paddingVertical: Spacing.six,
-    borderRadius: Spacing.four,
-  },
-  error: {
-    color: '#D93025',
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-    borderRadius: 26,
-    paddingHorizontal: Spacing.four,
-  },
-  secondaryButton: {
-    alignSelf: 'center',
-    padding: Spacing.two,
-  },
-});
