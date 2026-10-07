@@ -2,8 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
-/** Longest video v1 accepts, per the product brief. */
-export const MAX_VIDEO_SECONDS = 90;
+import { MAX_VIDEO_SECONDS } from '@shared/api';
 
 export type PickedVideo = {
   uri: string;
