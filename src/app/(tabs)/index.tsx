@@ -15,7 +15,13 @@ import { MAX_VIDEO_SECONDS } from '@shared/api';
 export default function HomeScreen() {
   const theme = useTheme();
   const { video, error, isPicking, pickVideo, clearVideo } = usePickVideo();
-  const { selectedTrack } = useSelectedTrack();
+  const { selectedTrack, setSelectedTrack } = useSelectedTrack();
+
+  /** Starts over: drops the video and the music chosen for it. Picking a different video keeps the music. */
+  function startOver() {
+    clearVideo();
+    setSelectedTrack(null);
+  }
 
   return (
     <ThemedView className="flex-1 flex-row justify-center">
@@ -98,7 +104,7 @@ export default function HomeScreen() {
           </Pressable>
 
           {video && (
-            <Pressable onPress={clearVideo} accessibilityRole="button" className="self-center p-2">
+            <Pressable onPress={startOver} accessibilityRole="button" className="self-center p-2">
               <ThemedText type="small" themeColor="textSecondary">
                 Clear
               </ThemedText>

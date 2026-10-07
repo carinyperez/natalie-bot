@@ -168,6 +168,28 @@ describe('ChooseTrackScreen', () => {
 });
 
 describe('HomeScreen music button', () => {
+  it('drops the chosen music when the user clears the video', async () => {
+    await openPicker();
+    await userEvent.press(row('City Lights'));
+    await userEvent.press(screen.getByRole('button', { name: 'Use this track' }));
+    expect(screen.getByText('City Lights · Helix Two')).toBeOnTheScreen();
+
+    await userEvent.press(screen.getByRole('button', { name: 'Clear' }));
+    await userEvent.press(screen.getByRole('button', { name: 'Choose a video' }));
+    await screen.findByRole('button', { name: 'Choose a different video' });
+    expect(screen.getByRole('button', { name: 'Choose music' })).toBeOnTheScreen();
+    expect(screen.queryByText('City Lights · Helix Two')).not.toBeOnTheScreen();
+  });
+
+  it('keeps the chosen music when the user picks a different video', async () => {
+    await openPicker();
+    await userEvent.press(row('City Lights'));
+    await userEvent.press(screen.getByRole('button', { name: 'Use this track' }));
+
+    await userEvent.press(screen.getByRole('button', { name: 'Choose a different video' }));
+    expect(screen.getByText('City Lights · Helix Two')).toBeOnTheScreen();
+  });
+
   it('appears only once a video is picked', async () => {
     await renderApp();
     expect(screen.queryByRole('button', { name: 'Choose music' })).not.toBeOnTheScreen();
