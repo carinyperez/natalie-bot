@@ -44,3 +44,11 @@ custom:
       - '@aws-sdk/*'
     # Gives esbuild the "@shared/*" path alias, which points at ../shared outside this directory.
     tsconfig: tsconfig.json
+
+functions:
+  listTracks:
+    handler: src/handlers/list-tracks.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /v1/tracks
