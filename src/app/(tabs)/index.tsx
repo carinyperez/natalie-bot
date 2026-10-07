@@ -7,14 +7,8 @@ import { VideoPreview } from '@/components/video-preview';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { usePickVideo } from '@/hooks/use-pick-video';
 import { useTheme } from '@/hooks/use-theme';
+import { formatDuration } from '@/utils/format-duration';
 import { MAX_VIDEO_SECONDS } from '@shared/api';
-
-function formatDuration(seconds: number) {
-  const total = Math.round(seconds);
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 export default function HomeScreen() {
   const theme = useTheme();
