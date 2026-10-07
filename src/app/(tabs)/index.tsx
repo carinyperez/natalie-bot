@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,6 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { VideoPreview } from '@/components/video-preview';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { usePickVideo } from '@/hooks/use-pick-video';
+import { useSelectedTrack } from '@/hooks/use-selected-track';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDuration } from '@/utils/format-duration';
 import { MAX_VIDEO_SECONDS } from '@shared/api';
@@ -13,6 +15,7 @@ import { MAX_VIDEO_SECONDS } from '@shared/api';
 export default function HomeScreen() {
   const theme = useTheme();
   const { video, error, isPicking, pickVideo, clearVideo } = usePickVideo();
+  const { selectedTrack } = useSelectedTrack();
 
   return (
     <ThemedView className="flex-1 flex-row justify-center">
@@ -43,6 +46,31 @@ export default function HomeScreen() {
               <ThemedText type="small" themeColor="textSecondary">
                 Up to {MAX_VIDEO_SECONDS} seconds
               </ThemedText>
+            </ThemedView>
+          )}
+
+          {video && (
+            <ThemedView
+              type="backgroundElement"
+              className="flex-row items-center gap-3 rounded-3xl py-3 pl-5 pr-3">
+              <ThemedView type="backgroundElement" className="flex-1 gap-0.5">
+                <ThemedText type="small" themeColor="textSecondary">
+                  Music
+                </ThemedText>
+                <ThemedText>
+                  {selectedTrack ? `${selectedTrack.title} · ${selectedTrack.artist}` : 'None chosen yet'}
+                </ThemedText>
+              </ThemedView>
+              <Pressable
+                onPress={() => router.push('/choose-track')}
+                accessibilityRole="button"
+                accessibilityLabel={selectedTrack ? 'Change music' : undefined}
+                className="min-h-[44px] items-center justify-center rounded-full px-4 active:opacity-70"
+                style={{ backgroundColor: theme.text }}>
+                <ThemedText type="small" style={{ color: theme.background }}>
+                  {selectedTrack ? 'Change' : 'Choose music'}
+                </ThemedText>
+              </Pressable>
             </ThemedView>
           )}
 

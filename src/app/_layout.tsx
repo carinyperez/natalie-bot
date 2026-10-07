@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { SelectedTrackProvider } from '@/hooks/use-selected-track';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,9 +17,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+      <SelectedTrackProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="choose-track" options={{ presentation: 'modal' }} />
+        </Stack>
+      </SelectedTrackProvider>
     </ThemeProvider>
   );
 }
