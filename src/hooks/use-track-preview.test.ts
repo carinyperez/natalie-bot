@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useTrackPreview } from '@/hooks/use-track-preview';
-import { latestPlayer, resetMockAudio, setMockAudioStatus } from '@/test-utils/mock-expo-audio';
+import { latestPlayer, mockSetAudioModeAsync, resetMockAudio, setMockAudioStatus } from '@/test-utils/mock-expo-audio';
 import type { Track } from '@shared/api';
 
 jest.mock('expo-audio', () => require('@/test-utils/mock-expo-audio').expoAudioMock);
@@ -21,6 +21,11 @@ afterEach(() => {
 });
 
 describe('useTrackPreview', () => {
+  it('plays previews even when the iPhone silent switch is on', async () => {
+    await renderHook(() => useTrackPreview());
+    expect(mockSetAudioModeAsync()).toHaveBeenCalledWith(expect.objectContaining({ playsInSilentMode: true }));
+  });
+
   it('plays a track preview', async () => {
     const { result } = await renderHook(() => useTrackPreview());
     await act(() => result.current.toggle(one));

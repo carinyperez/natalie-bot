@@ -1,4 +1,4 @@
-import { useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from 'expo-audio';
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Track } from '@shared/api';
@@ -17,6 +17,11 @@ export function useTrackPreview() {
     },
     [],
   );
+
+  // iOS mutes expo-audio when the silent switch is on, which would make every preview silent.
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  }, []);
 
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);

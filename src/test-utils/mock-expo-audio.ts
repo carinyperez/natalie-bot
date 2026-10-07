@@ -41,8 +41,16 @@ export function setMockAudioStatus(next: Partial<typeof status>) {
   status = { ...status, ...next };
 }
 
+const setAudioModeAsync = jest.fn((_mode: object) => Promise.resolve());
+
+/** The mocked setAudioModeAsync, to check the audio mode a hook asked for. */
+export function mockSetAudioModeAsync() {
+  return setAudioModeAsync;
+}
+
 export function resetMockAudio() {
   players = [];
+  setAudioModeAsync.mockClear();
   status = { playing: false, didJustFinish: false };
 }
 
@@ -57,4 +65,5 @@ export const expoAudioMock = {
     return player;
   },
   useAudioPlayerStatus: () => status,
+  setAudioModeAsync,
 };
