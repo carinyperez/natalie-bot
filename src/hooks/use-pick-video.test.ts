@@ -81,9 +81,15 @@ describe('usePickVideo', () => {
   });
 
   it('clears the video and error', async () => {
-    pickerReturns(60_000);
     const { result } = await renderHook(() => usePickVideo());
+    pickerReturns(60_000);
     await act(() => result.current.pickVideo());
+    // A rejected pick sets the error but keeps the earlier video, so both are set before clearing.
+    pickerReturns(91_000);
+    await act(() => result.current.pickVideo());
+    expect(result.current.video).not.toBeNull();
+    expect(result.current.error).not.toBeNull();
+
     await act(() => result.current.clearVideo());
     expect(result.current.video).toBeNull();
     expect(result.current.error).toBeNull();
