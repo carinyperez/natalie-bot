@@ -77,6 +77,17 @@ export default function HomeScreen() {
                   {selectedTrack ? 'Change' : 'Choose music'}
                 </ThemedText>
               </Pressable>
+              {selectedTrack && (
+                <Pressable
+                  onPress={() => setSelectedTrack(null)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove music"
+                  className="min-h-[44px] items-center justify-center px-2 active:opacity-70">
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Remove
+                  </ThemedText>
+                </Pressable>
+              )}
             </ThemedView>
           )}
 

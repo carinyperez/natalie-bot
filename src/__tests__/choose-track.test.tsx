@@ -181,6 +181,17 @@ describe('HomeScreen music button', () => {
     expect(screen.queryByText('City Lights · Helix Two')).not.toBeOnTheScreen();
   });
 
+  it('removes the chosen music', async () => {
+    await openPicker();
+    await userEvent.press(row('City Lights'));
+    await userEvent.press(screen.getByRole('button', { name: 'Use this track' }));
+
+    await userEvent.press(screen.getByRole('button', { name: 'Remove music' }));
+    expect(screen.getByText('None chosen yet')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Choose music' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Remove music' })).not.toBeOnTheScreen();
+  });
+
   it('keeps the chosen music when the user picks a different video', async () => {
     await openPicker();
     await userEvent.press(row('City Lights'));

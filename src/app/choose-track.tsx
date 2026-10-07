@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -127,9 +128,17 @@ function TrackRow({ track, isSelected, isPlaying, onSelect, onTogglePreview }: T
         onPress={onTogglePreview}
         accessibilityRole="button"
         accessibilityLabel={`${isPlaying ? 'Pause' : 'Play'} preview of ${track.title}`}
-        className="min-h-[44px] min-w-[72px] items-center justify-center rounded-full px-4 active:opacity-70"
+        className="h-11 w-11 items-center justify-center rounded-full active:opacity-70"
         style={{ backgroundColor: theme.background }}>
-        <ThemedText type="small">{isPlaying ? 'Pause' : 'Play'}</ThemedText>
+        <SymbolView
+          name={
+            isPlaying
+              ? { ios: 'pause.fill', android: 'pause', web: 'pause' }
+              : { ios: 'play.fill', android: 'play_arrow', web: 'play_arrow' }
+          }
+          size={18}
+          tintColor={theme.text}
+        />
       </Pressable>
     </ThemedView>
   );
