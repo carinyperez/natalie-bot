@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useTrackPreview } from '@/hooks/use-track-preview';
-import { mockPlayer, resetMockAudio, setMockAudioStatus } from '@/test-utils/mock-expo-audio';
+import { latestPlayer, resetMockAudio, setMockAudioStatus } from '@/test-utils/mock-expo-audio';
 import type { Track } from '@shared/api';
 
 jest.mock('expo-audio', () => require('@/test-utils/mock-expo-audio').expoAudioMock);
@@ -24,8 +24,8 @@ describe('useTrackPreview', () => {
   it('plays a track preview', async () => {
     const { result } = await renderHook(() => useTrackPreview());
     await act(() => result.current.toggle(one));
-    expect(mockPlayer.replace).toHaveBeenCalledWith(one.previewUrl);
-    expect(mockPlayer.play).toHaveBeenCalledTimes(1);
+    expect(latestPlayer().replace).toHaveBeenCalledWith(one.previewUrl);
+    expect(latestPlayer().play).toHaveBeenCalledTimes(1);
     expect(result.current.playingId).toBe('1');
   });
 
@@ -33,12 +33,12 @@ describe('useTrackPreview', () => {
     const { result } = await renderHook(() => useTrackPreview());
     await act(() => result.current.toggle(one));
     await act(() => result.current.toggle(one));
-    expect(mockPlayer.pause).toHaveBeenCalledTimes(1);
+    expect(latestPlayer().pause).toHaveBeenCalledTimes(1);
     expect(result.current.playingId).toBeNull();
 
     await act(() => result.current.toggle(one));
-    expect(mockPlayer.replace).toHaveBeenCalledTimes(1);
-    expect(mockPlayer.play).toHaveBeenCalledTimes(2);
+    expect(latestPlayer().replace).toHaveBeenCalledTimes(1);
+    expect(latestPlayer().play).toHaveBeenCalledTimes(2);
     expect(result.current.playingId).toBe('1');
   });
 
@@ -46,7 +46,7 @@ describe('useTrackPreview', () => {
     const { result } = await renderHook(() => useTrackPreview());
     await act(() => result.current.toggle(one));
     await act(() => result.current.toggle(two));
-    expect(mockPlayer.replace).toHaveBeenLastCalledWith(two.previewUrl);
+    expect(latestPlayer().replace).toHaveBeenLastCalledWith(two.previewUrl);
     expect(result.current.playingId).toBe('2');
   });
 
@@ -62,9 +62,9 @@ describe('useTrackPreview', () => {
     const { result, unmount } = await renderHook(() => useTrackPreview());
     await act(() => result.current.toggle(one));
     await unmount();
-    expect(mockPlayer.pause).toHaveBeenCalledTimes(1);
-    expect(mockPlayer.pause.mock.invocationCallOrder[0]).toBeLessThan(
-      mockPlayer.release.mock.invocationCallOrder[0],
+    expect(latestPlayer().pause).toHaveBeenCalledTimes(1);
+    expect(latestPlayer().pause.mock.invocationCallOrder[0]).toBeLessThan(
+      latestPlayer().release.mock.invocationCallOrder[0],
     );
   });
 });

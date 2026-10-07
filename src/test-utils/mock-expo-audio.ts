@@ -3,24 +3,36 @@
  *
  *   jest.mock('expo-audio', () => require('@/test-utils/mock-expo-audio').expoAudioMock);
  *
- * Like the real useAudioPlayer, the mock releases its player on unmount, and a released player
- * throws when used, so tests catch code that touches the player too late.
+ * Like the real useAudioPlayer, each mount gets its own player, released on unmount, and a released
+ * player throws when used, so tests catch code that touches the player too late.
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-let released = false;
-function assertNotReleased() {
-  if (released) throw new Error('Cannot use shared object that was already released');
+function createFakePlayer() {
+  let released = false;
+  const assertNotReleased = () => {
+    if (released) throw new Error('Cannot use shared object that was already released');
+  };
+  return {
+    play: jest.fn(assertNotReleased),
+    pause: jest.fn(assertNotReleased),
+    replace: jest.fn((_source: string) => assertNotReleased()),
+    release: jest.fn(() => {
+      released = true;
+    }),
+  };
 }
 
-export const mockPlayer = {
-  play: jest.fn(assertNotReleased),
-  pause: jest.fn(assertNotReleased),
-  replace: jest.fn((_source: string) => assertNotReleased()),
-  release: jest.fn(() => {
-    released = true;
-  }),
-};
+export type FakePlayer = ReturnType<typeof createFakePlayer>;
+
+let players: FakePlayer[] = [];
+
+/** The player created by the most recent useAudioPlayer mount. */
+export function latestPlayer() {
+  const player = players.at(-1);
+  if (!player) throw new Error('useAudioPlayer has not been called');
+  return player;
+}
 
 let status = { playing: false, didJustFinish: false };
 
@@ -30,15 +42,19 @@ export function setMockAudioStatus(next: Partial<typeof status>) {
 }
 
 export function resetMockAudio() {
-  released = false;
+  players = [];
   status = { playing: false, didJustFinish: false };
-  Object.values(mockPlayer).forEach((fn) => fn.mockClear());
 }
 
 export const expoAudioMock = {
   useAudioPlayer: () => {
-    useEffect(() => () => mockPlayer.release(), []);
-    return mockPlayer;
+    const [player] = useState(() => {
+      const p = createFakePlayer();
+      players.push(p);
+      return p;
+    });
+    useEffect(() => () => player.release(), [player]);
+    return player;
   },
   useAudioPlayerStatus: () => status,
 };
