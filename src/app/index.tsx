@@ -47,7 +47,7 @@ export default function HomeScreen() {
               className="items-center justify-center gap-1 rounded-3xl py-16">
               <ThemedText>No video selected yet</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Up to {MAX_VIDEO_SECONDS} seconds
+                Up to {MAX_VIDEO_SECONDS / 60} minutes
               </ThemedText>
             </ThemedView>
           )}

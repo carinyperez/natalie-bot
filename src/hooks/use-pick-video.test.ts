@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
 import { usePickVideo } from '@/hooks/use-pick-video';
+import { MAX_VIDEO_SECONDS } from '@shared/api';
 
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 
@@ -36,22 +37,22 @@ describe('usePickVideo', () => {
     expect(isPicking).toBe(false);
   });
 
-  it('accepts a video of exactly 90 seconds', async () => {
-    pickerReturns(90_000);
+  it('accepts a video of exactly the length limit', async () => {
+    pickerReturns(MAX_VIDEO_SECONDS * 1000);
     const { video } = await pick();
-    expect(video?.durationSeconds).toBe(90);
+    expect(video?.durationSeconds).toBe(MAX_VIDEO_SECONDS);
   });
 
-  it('rejects a video over 90 seconds', async () => {
-    pickerReturns(91_000);
+  it('rejects a video over the length limit', async () => {
+    pickerReturns((MAX_VIDEO_SECONDS + 1) * 1000);
     const { video, error } = await pick();
     expect(video).toBeNull();
-    expect(error).toBe("That video is too long. Pick one that's up to 90 seconds.");
+    expect(error).toBe("That video is too long. Pick one that's up to 5 minutes.");
   });
 
   it('reads the web picker duration as seconds', async () => {
     jest.replaceProperty(Platform, 'OS', 'web');
-    pickerReturns(91);
+    pickerReturns(MAX_VIDEO_SECONDS + 1);
     const { video, error } = await pick();
     expect(video).toBeNull();
     expect(error).toMatch(/too long/);
@@ -85,7 +86,7 @@ describe('usePickVideo', () => {
     pickerReturns(60_000);
     await act(() => result.current.pickVideo());
     // A rejected pick sets the error but keeps the earlier video, so both are set before clearing.
-    pickerReturns(91_000);
+    pickerReturns((MAX_VIDEO_SECONDS + 1) * 1000);
     await act(() => result.current.pickVideo());
     expect(result.current.video).not.toBeNull();
     expect(result.current.error).not.toBeNull();
