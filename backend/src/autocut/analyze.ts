@@ -11,7 +11,11 @@ export type Analysis = {
   durationSeconds: number;
   width: number;
   height: number;
-  /** JPEG contact sheets: one frame per second, 4x4 per sheet, each frame stamped with its m:ss time. */
+  /**
+   * JPEG contact sheets: one frame per second, 4x4 per sheet, read left to right, top to bottom. Tile k of a sheet
+   * is the frame at second startSeconds + k. Frames carry no drawn timestamp (the Linux ffmpeg build has no
+   * drawtext, and Lambda has no fonts), so the planner is told each sheet's seconds in text instead.
+   */
   sheets: { path: string; startSeconds: number; endSeconds: number }[];
   /** loudness[s] = loudest EBU R128 momentary loudness (LUFS) measured during second s. */
   loudness: number[];
@@ -64,13 +68,9 @@ export async function analyze(inputPath: string, workDir: string): Promise<Analy
   for (const stale of (await readdir(dir)).filter(isSheetFile)) await rm(path.join(dir, stale));
 
   // ffmpeg runs with cwd = workDir, so every file it writes is a bare name: no paths inside the filtergraph to escape.
-  // m:ss stamp, e.g. 1:05. drawtext's `t` is the frame's time, which after fps=1 is its whole second.
-  const stamp =
-    "drawtext=text='%{eif\\:floor(t/60)\\:d}\\:%{eif\\:mod(floor(t)\\,60)\\:d\\:2}'" +
-    ':x=8:y=8:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=4';
   const graph = [
     '[0:v]setpts=PTS-STARTPTS,split=2[forsheets][forscenes]',
-    `[forsheets]fps=1:round=down,scale=${FRAME_WIDTH}:-2,setsar=1,${stamp},` +
+    `[forsheets]fps=1:round=down,scale=${FRAME_WIDTH}:-2,setsar=1,` +
       `tile=${SHEET_COLUMNS}x${SHEET_ROWS}:padding=${TILE_PADDING}:color=white[sheets]`,
     // Scene scores barely change with resolution, so score small frames: much less work on 1080p/4K input.
     `[forscenes]scale=192:-2,select='gt(scene\\,${SCENE_THRESHOLD})',metadata=mode=print:file=${SCENES_FILE}[scenes]`,

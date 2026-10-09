@@ -44,10 +44,15 @@ describe('analyze on the 20 s fixture (hard cut at 10 s, loud second at 14 s)', 
     }
   });
 
-  it('stamps each frame with its time', async () => {
-    // Under the 0:00 stamp of the first frame. Unstamped, this is the test pattern's pure red bar.
-    const { r, g } = await pixelAt(analysis.sheets[0].path, 30, 22, workDir);
-    expect(r > 200 && g < 60).toBe(false);
+  it('puts the frame at second k in tile k, row by row', async () => {
+    // The fixture cuts from the test pattern (pure red bar top-left) to grey-edged colour bars at 10 s.
+    // Tile 9 (row 2, column 1) is second 9; tile 10 (row 2, column 2) is second 10.
+    const tile = (k: number) => ({ x: (k % 4) * (384 + 4) + 30, y: Math.floor(k / 4) * (216 + 4) + 22 });
+    const isRed = ({ r, g }: { r: number; g: number }) => r > 200 && g < 60;
+    const second9 = await pixelAt(analysis.sheets[0].path, tile(9).x, tile(9).y, workDir);
+    const second10 = await pixelAt(analysis.sheets[0].path, tile(10).x, tile(10).y, workDir);
+    expect(isRed(second9)).toBe(true);
+    expect(isRed(second10)).toBe(false);
   });
 
   it('measures loudness once per second', () => {
