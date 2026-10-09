@@ -9,7 +9,9 @@
     "package": "osls package",
     "package:prod": "osls package --stage prod",
     "deploy": "osls deploy",
-    "deploy:prod": "osls deploy --stage prod"
+    "deploy:prod": "osls deploy --stage prod",
+    "autocut:try": "tsx scripts/autocut-try.ts",
+    "autocut:fixtures": "tsx scripts/make-fixture.ts"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
@@ -19,10 +21,13 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^24.19.1",
     "esbuild": "^0.28.2",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
     "jest": "^29.7.0",
     "osls": "^4.4.0",
     "serverless-esbuild": "^1.57.2",
     "ts-jest": "^29.4.14",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   }
 }
