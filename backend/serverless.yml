@@ -45,10 +45,11 @@ custom:
     # Gives esbuild the "@shared/*" path alias, which points at ../shared outside this directory.
     tsconfig: tsconfig.json
 
+# The AutoCut endpoints and the processing Lambda are added by their own tickets.
 functions:
-  listTracks:
-    handler: src/handlers/list-tracks.handler
+  health:
+    handler: src/handlers/health.handler
     events:
       - httpApi:
           method: GET
-          path: /v1/tracks
+          path: /v1/health

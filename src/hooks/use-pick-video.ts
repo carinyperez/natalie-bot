@@ -37,7 +37,7 @@ export function usePickVideo() {
         asset.duration != null ? (Platform.OS === 'web' ? asset.duration : asset.duration / 1000) : null;
 
       if (durationSeconds != null && durationSeconds > MAX_VIDEO_SECONDS) {
-        setError(`That video is too long. Pick one that's up to ${MAX_VIDEO_SECONDS} seconds.`);
+        setError(`That video is too long. Pick one that's up to ${MAX_VIDEO_SECONDS / 60} minutes.`);
         return;
       }
 

@@ -13,12 +13,12 @@ describe('json', () => {
 
 describe('errorResponse', () => {
   it('returns 400 with the ApiError envelope for validation_error', () => {
-    const res = errorResponse('validation_error', 'trackId is required');
+    const res = errorResponse('validation_error', 'prompt is required');
 
     expect(res.statusCode).toBe(400);
     expect(res.headers?.['content-type']).toMatch(/^application\/json/);
     const body: ApiError = JSON.parse(res.body as string);
-    expect(body).toEqual({ error: { code: 'validation_error', message: 'trackId is required' } });
+    expect(body).toEqual({ error: { code: 'validation_error', message: 'prompt is required' } });
   });
 
   it('returns 500 for internal_error', () => {

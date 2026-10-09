@@ -4,11 +4,11 @@ import type { ApiError, ApiErrorCode } from '@shared/api';
 /** Status code for each error code. Every ApiErrorCode must have one. */
 const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   validation_error: 400,
+  prompt_too_long: 400,
   unauthorized: 401,
   not_found: 404,
   file_too_large: 413,
   video_too_long: 422,
-  unknown_track: 422,
   internal_error: 500,
 };
 
