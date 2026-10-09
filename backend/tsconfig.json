@@ -19,6 +19,6 @@
     }
   },
   // ../shared holds the API contract the app also imports. Its tests run under the root Jest.
-  "include": ["src/**/*.ts", "../shared/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "../shared/**/*.ts"],
   "exclude": ["../shared/**/*.test.ts"]
 }
