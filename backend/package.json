@@ -9,7 +9,9 @@
     "package": "osls package",
     "package:prod": "osls package --stage prod",
     "deploy": "osls deploy",
-    "deploy:prod": "osls deploy --stage prod"
+    "deploy:prod": "osls deploy --stage prod",
+    "autocut:try": "tsx scripts/autocut-try.ts",
+    "autocut:fixtures": "tsx scripts/make-fixture.ts"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
