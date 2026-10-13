@@ -29,5 +29,8 @@
     "ts-jest": "^29.4.14",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0"
   }
 }
