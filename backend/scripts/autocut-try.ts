@@ -10,11 +10,11 @@
 import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import Anthropic from '@anthropic-ai/sdk';
 import { DEFAULT_PROMPT, type EditSegment } from '@shared/api';
 import { analyze } from '../src/autocut/analyze';
 import { probeVideo } from '../src/autocut/probe';
 import { planEdit } from '../src/autocut/plan';
+import { createPlanClient } from '../src/autocut/plan-client';
 import { render } from '../src/autocut/render';
 
 /** A hand-written plan is only digits, dots, dashes, @ and commas; anything else is a prompt for Claude. */
@@ -50,8 +50,8 @@ async function main(): Promise<void> {
     segments = parsePlan(planArg);
   } else {
     started = Date.now();
-    // Credentials come from the environment: ANTHROPIC_API_KEY, or an `ant auth login` profile.
-    const plan = await planEdit(new Anthropic(), { analysis, prompt: planArg });
+    // Claude runs through Amazon Bedrock, with your AWS credentials: set AWS_PROFILE and AWS_REGION.
+    const plan = await planEdit(createPlanClient(), { analysis, prompt: planArg });
     segments = plan.segments;
     console.log(`Planned in ${((Date.now() - started) / 1000).toFixed(1)} s for "${planArg}"`);
     console.log(`  ${plan.message}`);

@@ -109,14 +109,15 @@ describe('buildPlanRequest', () => {
     expect(refine).toContain('Kept the takedown and the escape, 14 s.');
   });
 
-  it('asks Opus 5.5 at medium effort for JSON matching the plan schema, with refusal fallback on', async () => {
+  it('asks Opus 5.5 on Bedrock at medium effort for JSON matching the plan schema', async () => {
     const params = await buildPlanRequest({ analysis, prompt: 'AutoCut' });
     expect(params).toMatchObject({
-      model: 'claude-opus-5-5',
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
+      model: 'anthropic.claude-opus-5-5',
       output_config: { effort: 'medium', format: { type: 'json_schema' } },
     });
+    // Bedrock rejects the server-side fallback fields; refusals are handled by the client's middleware.
+    expect(params).not.toHaveProperty('fallbacks');
+    expect(params).not.toHaveProperty('betas');
     const { schema } = params.output_config!.format as unknown as { schema: { required: string[] } };
     expect(schema.required).toEqual(['segments', 'message']);
   });

@@ -5,12 +5,11 @@ import { SHEET_COLUMNS, SHEET_ROWS, type Analysis } from './analyze';
 import { AutocutError } from './errors';
 import { validateSegments } from './render';
 
-export const PLAN_MODEL = 'claude-opus-5-5';
+/** Claude Opus 5.5, by its Amazon Bedrock model id: the planner runs through Bedrock (see plan-client.ts). */
+export const PLAN_MODEL = 'anthropic.claude-opus-5-5';
 /** Enough for picking moments from a few dozen frames; tune on real videos before changing the model. */
 export const PLAN_EFFORT = 'medium';
 const PLAN_MAX_TOKENS = 16_000;
-/** Lets a request the safety classifiers decline be retried on another model, server-side. */
-const FALLBACK_BETA = 'server-side-fallback-2026-07-01';
 
 /** A reel is this long unless the video itself is shorter. */
 export const MIN_REEL_SECONDS = 10;
@@ -33,7 +32,7 @@ export type PlanInput = {
 
 export type PlanUsage = { attempts: number; inputTokens: number; outputTokens: number };
 
-/** The part of the Anthropic client planEdit uses, so tests can pass a fake. */
+/** The part of the client planEdit uses (the Bedrock client has the same shape), so tests can pass a fake. */
 export type PlanClient = { beta: { messages: Pick<Anthropic['beta']['messages'], 'create'> } };
 
 type MessageParams = Anthropic.Beta.MessageCreateParamsNonStreaming;
@@ -81,7 +80,8 @@ const PLAN_SCHEMA = {
 
 /**
  * Asks Claude for an edit plan and checks it. A plan that breaks a rule gets one retry with the reason;
- * after that, or if the request is declined, throws AutocutError 'plan_failed'.
+ * after that, or if the request is declined (by the model and its fallback, see plan-client.ts), throws
+ * AutocutError 'plan_failed'.
  */
 export async function planEdit(client: PlanClient, input: PlanInput): Promise<EditPlan & { usage: PlanUsage }> {
   const params = await buildPlanRequest(input);
@@ -150,8 +150,6 @@ export async function buildPlanRequest({ analysis, prompt, previousPlan }: PlanI
   return {
     model: PLAN_MODEL,
     max_tokens: PLAN_MAX_TOKENS,
-    betas: [FALLBACK_BETA],
-    fallbacks: 'default',
     system: SYSTEM_PROMPT,
     output_config: { effort: PLAN_EFFORT, format: { type: 'json_schema', schema: PLAN_SCHEMA } },
     messages: [{ role: 'user', content }],
