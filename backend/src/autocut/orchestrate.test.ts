@@ -1,7 +1,7 @@
 import type { Job } from '@shared/api';
 import { analyze, type Analysis } from './analyze';
 import { AutocutError } from './errors';
-import { failureCode, runJob, type JobStorage } from './orchestrate';
+import { failureCode, RUN_LEASE_MS, runJob, type JobStorage } from './orchestrate';
 import { planEdit, type PlanClient } from './plan';
 import { render } from './render';
 
@@ -51,8 +51,15 @@ const newJob = (overrides: Partial<Job> = {}): Job => ({
 function memoryStorage(jobs: Job[], analyses: Record<string, Analysis> = {}) {
   const byId = new Map(jobs.map((j) => [j.id, structuredClone(j)]));
   const updates: { jobId: string; changes: Partial<Job> }[] = [];
+  const claims = new Map<string, number>();
   const storage: JobStorage = {
     getJob: async (id) => structuredClone(byId.get(id) ?? null),
+    claimRun: async (id, until) => {
+      const held = claims.get(id);
+      if (held !== undefined && held > clock.getTime()) return false;
+      claims.set(id, until.getTime());
+      return true;
+    },
     updateJob: async (id, changes) => {
       updates.push({ jobId: id, changes });
       Object.assign(byId.get(id)!, changes);
@@ -71,9 +78,12 @@ function memoryStorage(jobs: Job[], analyses: Record<string, Analysis> = {}) {
 
 const planner = { client: {} as PlanClient, provider: 'bedrock' as const };
 const quietLog = { info: jest.fn(), error: jest.fn() };
-const deps = (storage: JobStorage) => ({ storage, planner, log: quietLog, now: () => new Date('2026-10-14T10:05:00Z') });
+/** The time runJob sees; tests move it to let a claim lapse. */
+let clock = new Date('2026-10-14T10:05:00Z');
+const deps = (storage: JobStorage) => ({ storage, planner, log: quietLog, now: () => clock });
 
 beforeEach(() => {
+  clock = new Date('2026-10-14T10:05:00Z');
   jest.resetAllMocks();
   mockAnalyze.mockResolvedValue(analysis);
   mockPlanEdit.mockResolvedValue(plan);
@@ -112,6 +122,28 @@ describe('runJob for a new upload', () => {
     await expect(runJob('job-1', deps(storage))).resolves.toEqual(done);
     expect(updates).toHaveLength(0);
     expect(mockAnalyze).not.toHaveBeenCalled();
+  });
+
+  it('runs a job once when the trigger arrives twice at the same time', async () => {
+    const { storage, stored } = memoryStorage([newJob()]);
+    await Promise.all([runJob('job-1', deps(storage)), runJob('job-1', deps(storage))]);
+
+    expect(mockAnalyze).toHaveBeenCalledTimes(1);
+    expect(mockPlanEdit).toHaveBeenCalledTimes(1);
+    expect(mockRender).toHaveBeenCalledTimes(1);
+    expect(stored('job-1').status).toBe('succeeded');
+  });
+
+  it('lets a retry take over once the claim of a crashed run has lapsed', async () => {
+    const { storage } = memoryStorage([newJob()]);
+    await storage.claimRun('job-1', new Date(clock.getTime() + RUN_LEASE_MS)); // a run that then crashed
+
+    await runJob('job-1', deps(storage));
+    expect(mockAnalyze).not.toHaveBeenCalled();
+
+    clock = new Date(clock.getTime() + RUN_LEASE_MS + 1);
+    await runJob('job-1', deps(storage));
+    expect(mockAnalyze).toHaveBeenCalledTimes(1);
   });
 
   it('throws for a job that does not exist', async () => {

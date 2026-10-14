@@ -11,6 +11,12 @@ import { OUTPUT_HEIGHT, OUTPUT_WIDTH, render } from './render';
  */
 export type JobStorage = {
   getJob(jobId: string): Promise<Job | null>;
+  /**
+   * Claims the right to run a job, atomically: true for exactly one caller until `until`, then a new claim may win.
+   * On AWS this is a conditional database update; the S3 event that starts a run can be delivered more than once,
+   * and a crashed run must not hold the job forever.
+   */
+  claimRun(jobId: string, until: Date): Promise<boolean>;
   /** Saves changes to a job. The orchestrator sets updatedAt itself. */
   updateJob(jobId: string, changes: Partial<Job>): Promise<void>;
   /** A local path to the video the job edits. For a refine, that is the original upload's video. */
@@ -26,6 +32,12 @@ export type JobStorage = {
 
 /** The Claude client the Plan step uses, and how it reaches Claude. */
 export type Planner = { client: PlanClient; provider: PlanProvider };
+
+/**
+ * How long a claimed run holds a job. Longer than Lambda's 15-minute limit, so a claim only lapses once its run is
+ * certainly over, letting a retry take over a run that crashed.
+ */
+export const RUN_LEASE_MS = 16 * 60 * 1000;
 
 export type OrchestrateDeps = {
   storage: JobStorage;
@@ -47,13 +59,18 @@ const FAILURE_MESSAGES: Record<JobErrorCode, string> = {
  * Runs one AutoCut job to the end: Analyze, then Plan, then Render, keeping the job's stage up to date so the app can
  * show progress. A refine (a job with refinesJobId) reuses the analysis of the job it refines and gives Claude that
  * job's plan to adjust. Every failure ends the job as 'failed' with a code and a message the app can show; only a
- * missing job throws. A job that is already finished is returned unchanged, so a repeated trigger is harmless.
+ * missing job throws. A job that is finished, or claimed by a run still in progress, is returned unchanged, so a
+ * repeated trigger is harmless.
  */
 export async function runJob(jobId: string, deps: OrchestrateDeps): Promise<Job> {
   const { storage, planner, now = () => new Date(), log = console } = deps;
   const job = await storage.getJob(jobId);
   if (!job) throw new Error(`Job ${jobId} not found.`);
   if (job.status === 'succeeded' || job.status === 'failed') return job;
+  if (!(await storage.claimRun(jobId, new Date(now().getTime() + RUN_LEASE_MS)))) {
+    log.info(`Job ${jobId}: another run holds it; skipping this trigger.`);
+    return job;
+  }
 
   const update = async (changes: Partial<Job>) => {
     Object.assign(job, changes, { updatedAt: now().toISOString() });

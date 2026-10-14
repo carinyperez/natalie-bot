@@ -30,6 +30,7 @@ async function diskStorage(video: string) {
   const stages: string[] = [];
   const storage: JobStorage = {
     getJob: async (id) => structuredClone(jobs.get(id) ?? null),
+    claimRun: async () => true,
     updateJob: async (id, changes) => {
       if (changes.stage) stages.push(`${id}:${changes.stage}`);
       Object.assign(jobs.get(id)!, changes);
