@@ -10,7 +10,9 @@ npm run autocut:try -- ~/Movies/match.mov "just the takedowns"   # Claude plans 
 npm run autocut:try -- ~/Movies/match.mov 12-18,40.5-47@0.3      # hand-written plan, no Claude call
 ```
 
-- **With a prompt (or nothing):** the Plan step sends the contact sheets, the loud moments, the scene cuts and your prompt to Claude (`src/autocut/plan.ts`), checks the plan it gets back, and renders it. This calls Claude through Amazon Bedrock, which costs money. It uses your AWS credentials, not an API key: set `AWS_PROFILE` and `AWS_REGION` for an AWS account with access to Claude Opus 5.5 (and Claude Opus 4.8, the refusal fallback) enabled in Bedrock. It prints the plan, Claude's one-line summary and the tokens used.
+- **With a prompt (or nothing):** the Plan step sends the contact sheets, the loud moments, the scene cuts and your prompt to Claude (`src/autocut/plan.ts`), checks the plan it gets back, and renders it. This calls Claude, which costs money (roughly 5–25 cents a plan). There are two ways to reach it:
+    - **Amazon Bedrock** (what the app uses): set `AWS_REGION` and AWS credentials (`AWS_PROFILE`, or a Bedrock API key in `AWS_BEARER_TOKEN_BEDROCK`) for an account with Claude Opus 5.5 and Claude Opus 4.8 (the refusal fallback) enabled in Bedrock.
+    - **Anthropic's API** (quickest for a local try): set `ANTHROPIC_API_KEY`. When it is set, the script uses it instead of Bedrock. It prints the plan, Claude's one-line summary and the tokens used.
 - **With segments:** comma-separated `start-end` in seconds, each optionally `@cropCenterX` (0 = left edge, 1 = right edge, default 0.5). No API call.
 
 Either way it prints an analysis summary, leaves the contact sheets and `analysis.json` in a temp directory, and prints the path of the rendered 1080x1920 reel.

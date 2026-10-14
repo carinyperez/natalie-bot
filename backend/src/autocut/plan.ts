@@ -5,8 +5,18 @@ import { SHEET_COLUMNS, SHEET_ROWS, type Analysis } from './analyze';
 import { AutocutError } from './errors';
 import { validateSegments } from './render';
 
-/** Claude Opus 5.5, by its Amazon Bedrock model id: the planner runs through Bedrock (see plan-client.ts). */
-export const PLAN_MODEL = 'anthropic.claude-opus-5-5';
+/**
+ * Where the planner reaches Claude Opus 5.5. The app uses Bedrock (no API key, AWS permissions only).
+ * 'anthropic' calls Anthropic's API directly with ANTHROPIC_API_KEY, for trying the planner locally.
+ */
+export type PlanProvider = 'bedrock' | 'anthropic';
+
+const PROVIDERS: Record<PlanProvider, Pick<MessageParams, 'model' | 'betas' | 'fallbacks'>> = {
+  // Bedrock has no server-side refusal fallback; plan-client.ts registers the SDK's fallback middleware instead.
+  bedrock: { model: 'anthropic.claude-opus-5-5' },
+  // A request the safety classifiers decline is retried on another model, server-side.
+  anthropic: { model: 'claude-opus-5-5', betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' },
+};
 /** Enough for picking moments from a few dozen frames; tune on real videos before changing the model. */
 export const PLAN_EFFORT = 'medium';
 const PLAN_MAX_TOKENS = 16_000;
@@ -83,8 +93,12 @@ const PLAN_SCHEMA = {
  * after that, or if the request is declined (by the model and its fallback, see plan-client.ts), throws
  * AutocutError 'plan_failed'.
  */
-export async function planEdit(client: PlanClient, input: PlanInput): Promise<EditPlan & { usage: PlanUsage }> {
-  const params = await buildPlanRequest(input);
+export async function planEdit(
+  client: PlanClient,
+  input: PlanInput,
+  provider: PlanProvider = 'bedrock',
+): Promise<EditPlan & { usage: PlanUsage }> {
+  const params = await buildPlanRequest(input, provider);
   const usage: PlanUsage = { attempts: 0, inputTokens: 0, outputTokens: 0 };
   let problem = '';
 
@@ -114,7 +128,10 @@ export async function planEdit(client: PlanClient, input: PlanInput): Promise<Ed
 }
 
 /** The request for one plan: the contact sheets with their seconds, the measured signals, and what the user asked. */
-export async function buildPlanRequest({ analysis, prompt, previousPlan }: PlanInput): Promise<MessageParams> {
+export async function buildPlanRequest(
+  { analysis, prompt, previousPlan }: PlanInput,
+  provider: PlanProvider = 'bedrock',
+): Promise<MessageParams> {
   const content: Anthropic.Beta.BetaContentBlockParam[] = [];
   for (const [index, sheet] of analysis.sheets.entries()) {
     const lastSecond = Math.max(sheet.startSeconds, Math.ceil(sheet.endSeconds) - 1);
@@ -148,7 +165,7 @@ export async function buildPlanRequest({ analysis, prompt, previousPlan }: PlanI
   content.push({ type: 'text', text: lines.join('\n') });
 
   return {
-    model: PLAN_MODEL,
+    ...PROVIDERS[provider],
     max_tokens: PLAN_MAX_TOKENS,
     system: SYSTEM_PROMPT,
     output_config: { effort: PLAN_EFFORT, format: { type: 'json_schema', schema: PLAN_SCHEMA } },

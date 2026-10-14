@@ -118,6 +118,16 @@ describe('buildPlanRequest', () => {
     // Bedrock rejects the server-side fallback fields; refusals are handled by the client's middleware.
     expect(params).not.toHaveProperty('fallbacks');
     expect(params).not.toHaveProperty('betas');
+  });
+
+  it("uses Anthropic's model id and server-side refusal fallback for the 'anthropic' provider", async () => {
+    const params = await buildPlanRequest({ analysis, prompt: 'AutoCut' }, 'anthropic');
+    expect(params).toMatchObject({
+      model: 'claude-opus-5-5',
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'medium', format: { type: 'json_schema' } },
+    });
     const { schema } = params.output_config!.format as unknown as { schema: { required: string[] } };
     expect(schema.required).toEqual(['segments', 'message']);
   });
@@ -148,6 +158,13 @@ describe('planEdit', () => {
 
     expect(result).toEqual({ ...goodPlan, usage: { attempts: 1, inputTokens: 1000, outputTokens: 50 } });
     expect(calls).toHaveLength(1);
+    expect(calls[0].model).toBe('anthropic.claude-opus-5-5');
+  });
+
+  it('sends the request for the provider it is given', async () => {
+    const { client, calls } = fakeClient([{ text: JSON.stringify(goodPlan) }]);
+    await planEdit(client, { analysis, prompt: 'AutoCut' }, 'anthropic');
+    expect(calls[0]).toMatchObject({ model: 'claude-opus-5-5', fallbacks: 'default' });
   });
 
   it('retries once with the reason when the plan breaks a rule, and uses the corrected plan', async () => {

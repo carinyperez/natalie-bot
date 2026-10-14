@@ -50,8 +50,11 @@ async function main(): Promise<void> {
     segments = parsePlan(planArg);
   } else {
     started = Date.now();
-    // Claude runs through Amazon Bedrock, with your AWS credentials: set AWS_PROFILE and AWS_REGION.
-    const plan = await planEdit(createPlanClient(), { analysis, prompt: planArg });
+    // The app reaches Claude through Amazon Bedrock (AWS credentials and AWS_REGION). With ANTHROPIC_API_KEY set,
+    // this script calls Anthropic's API directly instead, which needs no AWS setup.
+    const provider = process.env.ANTHROPIC_API_KEY ? 'anthropic' : 'bedrock';
+    console.log(`Planning with Claude through ${provider === 'anthropic' ? "Anthropic's API" : 'Amazon Bedrock'}...`);
+    const plan = await planEdit(createPlanClient(provider), { analysis, prompt: planArg }, provider);
     segments = plan.segments;
     console.log(`Planned in ${((Date.now() - started) / 1000).toFixed(1)} s for "${planArg}"`);
     console.log(`  ${plan.message}`);
